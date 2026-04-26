@@ -74,12 +74,29 @@ def draw_board():
             pygame.draw.rect(screen, COLORS["LIGHT_GRAY"], (x,y,CELL_SIZE,CELL_SIZE))
 
             if numbers[row][col]>0:
-                text = font.render(str(numbers[row][col], (x,y,CELL_SIZE,CELL_SIZE)))
-                screen.blit(text, (x+10,y+10)) #centering
+                text = font.render(str(numbers[row][col]), True, (0,0,0))
+                text_rect = text.get_rect(center = (x+CELL_SIZE//2, y+CELL_SIZE//2))
+                screen.blit(text, text_rect)
             
             if numbers[row][col]==-1:
-                #mine
-                pass
+                #mine (fix later)
+                text = font.render("X", True, (0,0,0))
+                text_rect = text.get_rect(center = (x+CELL_SIZE//2, y+CELL_SIZE//2))
+                screen.blit(text, text_rect)
+    
+def mouse_click(event):
+    x,y = event.pos
+
+    row = y//CELL_SIZE
+    col = x//CELL_SIZE
+
+    if not(0 <= row < HEIGHT and 0 <= col < WIDTH):
+        return
+    
+    if revealed[row][col]:
+        return
+    
+    revealed[row][col] = True
 
 for pos in mine_positions:
     mines[pos[0]][pos[1]] = True
@@ -97,6 +114,10 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+        
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            mouse_click(event)
+
     
     draw_board()
     pygame.display.update()
