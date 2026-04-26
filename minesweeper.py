@@ -3,9 +3,6 @@ import random
 
 pygame.init()
 
-screen = pygame.display.set_mode((400,400))
-clock = pygame.time.Clock()
-
 WIDTH = 15
 HEIGHT = 15
 NUM_MINES = 60
@@ -15,6 +12,9 @@ COLORS = {
     "LIGHT_GRAY": (192,192,192),
     "WHITE": (255,255,255)
 }
+
+screen = pygame.display.set_mode((WIDTH*CELL_SIZE, HEIGHT*CELL_SIZE))
+clock = pygame.time.Clock()
 
 positions = [(r,c) for r in range(HEIGHT) for c in range(WIDTH)]
 mines = [[False]*WIDTH for _ in range(HEIGHT)]
@@ -43,6 +43,9 @@ def check_if_mine(r,c, mines):
         return False
             
 def set_cell_number(mines, numbers, r, c):
+    if not(0 <= r < HEIGHT and 0 <= c < WIDTH):
+        return
+    
     if mines[r][c] == True:
         numbers[r][c] = -1
         return
@@ -102,14 +105,18 @@ def mouse_click(event):
     revealed[row][col] = True
 
 def flood_fill(row, col):
+    #TODO: fix wrong logic
 
     if not(0 <= row < HEIGHT and 0 <= col < WIDTH):
         return
 
-    if numbers[row][col] > 1 or numbers[row][col] == -1 or revealed[row][col]:
+    if numbers[row][col] == -1 or revealed[row][col]:
         return
     
     revealed[row][col] = True
+    
+    if numbers[row][col] != 0:
+        return
     
     for r in range(row-1, row+2):
         for c in range(col-1, col+2):
