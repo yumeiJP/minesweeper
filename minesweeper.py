@@ -106,7 +106,7 @@ def flood_fill(row, col):
     if not(0 <= row < HEIGHT and 0 <= col < WIDTH):
         return
 
-    if numbers[row][col] > 1 or revealed[row][col]:
+    if numbers[row][col] > 1 or numbers[row][col] == -1 or revealed[row][col]:
         return
     
     revealed[row][col] = True
