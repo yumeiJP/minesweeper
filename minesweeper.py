@@ -6,9 +6,9 @@ pygame.init()
 screen = pygame.display.set_mode((400,400))
 clock = pygame.time.Clock()
 
-WIDTH = 9
-HEIGHT = 9
-NUM_MINES = 10
+WIDTH = 15
+HEIGHT = 15
+NUM_MINES = 60
 CELL_SIZE = 40
 COLORS = {
     "GRAY": (128, 128, 128),
@@ -90,18 +90,22 @@ def mouse_click(event):
     row = y//CELL_SIZE
     col = x//CELL_SIZE
 
-    if numbers[row][col] == 0:
-        flood_fill(row,col)
-
     if not(0 <= row < HEIGHT and 0 <= col < WIDTH):
         return
     
     if revealed[row][col]:
         return
     
+    if numbers[row][col] == 0:
+        flood_fill(row,col)
+    
     revealed[row][col] = True
 
 def flood_fill(row, col):
+
+    if not(0 <= row < HEIGHT and 0 <= col < WIDTH):
+        return
+
     if numbers[row][col] > 1 or revealed[row][col]:
         return
     
