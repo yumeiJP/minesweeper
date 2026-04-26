@@ -26,36 +26,39 @@ def print_board(mines, numbers):
         print()
 
 def check_if_mine(r,c, mines):
-            if r<0 or c<0 or r>=len(mines) or c>=len(mines[0]):
-                return False
-            if mines[r][c]:
-                return True
-            else:
-                return False
+    if r<0 or c<0 or r>=len(mines) or c>=len(mines[0]):
+        return False
+    if mines[r][c]:
+        return True
+    else:
+        return False
+            
+def set_cell_number(mines, numbers, r, c):
+    if mines[r][c] == True:
+        numbers[r][c] = -1
+        return
+    
+    count = 0
+    
+    for row in range(r-1, r+2):
+        for column in range(c-1, c+2):
+            if row == r and column == c:
+                continue
+
+            if check_if_mine(row,column, mines):
+                count += 1
+    
+    numbers[r][c] = count
 
 for pos in mine_positions:
     mines[pos[0]][pos[1]] = True
 
 for r in range(HEIGHT):
     for c in range(WIDTH):
-        if mines[r][c] == True:
-            numbers[r][c] = -1
-            continue
-        
-        count = 0
-        
-        for row in range(r-1, r+2):
-            for column in range(c-1, c+2):
-                if row == r and column == c:
-                    continue
+        set_cell_number(mines, numbers, r, c)
 
-                has_mine = check_if_mine(row,column,mines)
-                if has_mine:
-                    count += 1
-        
-        numbers[r][c] = count
 
-print_board()
+print_board(mines, numbers)
 
 running = True
 
