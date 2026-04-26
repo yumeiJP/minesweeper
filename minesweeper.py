@@ -9,10 +9,19 @@ clock = pygame.time.Clock()
 WIDTH = 9
 HEIGHT = 9
 NUM_MINES = 10
+CELL_SIZE = 40
+COLORS = {
+    "GRAY": (128, 128, 128),
+    "LIGHT_GRAY": (192,192,192),
+    "WHITE": (255,255,255)
+}
 
 positions = [(r,c) for r in range(HEIGHT) for c in range(WIDTH)]
 mines = [[False]*WIDTH for _ in range(HEIGHT)]
 numbers = [[0]*WIDTH for _ in range(HEIGHT)]
+revealed = [[False]*WIDTH for _ in range(HEIGHT)]
+
+font = pygame.font.SysFont('Arial', 24)
 
 mine_positions = random.sample(positions, NUM_MINES)
 
@@ -50,6 +59,28 @@ def set_cell_number(mines, numbers, r, c):
     
     numbers[r][c] = count
 
+def draw_board():
+    screen.fill(COLORS["WHITE"])
+
+    for row in range(HEIGHT):
+        for col in range(WIDTH):
+            x = col * CELL_SIZE
+            y = row * CELL_SIZE
+
+            if not revealed[row][col]:
+                pygame.draw.rect(screen, COLORS["GRAY"], (x,y,CELL_SIZE,CELL_SIZE))
+                continue
+            
+            pygame.draw.rect(screen, COLORS["LIGHT_GRAY"], (x,y,CELL_SIZE,CELL_SIZE))
+
+            if numbers[row][col]>0:
+                text = font.render(str(numbers[row][col], (x,y,CELL_SIZE,CELL_SIZE)))
+                screen.blit(text, (x+10,y+10)) #centering
+            
+            if numbers[row][col]==-1:
+                #mine
+                pass
+
 for pos in mine_positions:
     mines[pos[0]][pos[1]] = True
 
@@ -67,6 +98,7 @@ while running:
         if event.type == pygame.QUIT:
             running = False
     
+    draw_board()
     pygame.display.update()
 
     clock.tick(60)
