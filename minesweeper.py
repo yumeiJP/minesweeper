@@ -90,6 +90,9 @@ def mouse_click(event):
     row = y//CELL_SIZE
     col = x//CELL_SIZE
 
+    if numbers[row][col] == 0:
+        flood_fill(row,col)
+
     if not(0 <= row < HEIGHT and 0 <= col < WIDTH):
         return
     
@@ -97,6 +100,17 @@ def mouse_click(event):
         return
     
     revealed[row][col] = True
+
+def flood_fill(row, col):
+    if numbers[row][col] > 1 or revealed[row][col]:
+        return
+    
+    revealed[row][col] = True
+    
+    for r in range(row-1, row+2):
+        for c in range(col-1, col+2):
+            if r==row and c==col: continue
+            flood_fill(r,c)
 
 for pos in mine_positions:
     mines[pos[0]][pos[1]] = True
@@ -117,7 +131,6 @@ while running:
         
         if event.type == pygame.MOUSEBUTTONDOWN:
             mouse_click(event)
-
     
     draw_board()
     pygame.display.update()
