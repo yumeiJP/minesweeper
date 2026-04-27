@@ -5,6 +5,7 @@ pygame.init()
 
 WIDTH = 15
 HEIGHT = 15
+HEADER_HEIGHT = 50
 NUM_MINES = 60
 CELL_SIZE = 40
 COLORS = {
@@ -13,7 +14,7 @@ COLORS = {
     "WHITE": (255,255,255)
 }
 
-screen = pygame.display.set_mode((WIDTH*CELL_SIZE, HEIGHT*CELL_SIZE))
+screen = pygame.display.set_mode((WIDTH*CELL_SIZE, HEIGHT*CELL_SIZE + HEADER_HEIGHT))
 clock = pygame.time.Clock()
 
 positions = [(r,c) for r in range(HEIGHT) for c in range(WIDTH)]
@@ -73,7 +74,7 @@ def draw_board():
     for row in range(HEIGHT):
         for col in range(WIDTH):
             x = col * CELL_SIZE
-            y = row * CELL_SIZE
+            y = row * CELL_SIZE + HEADER_HEIGHT
 
             if not revealed[row][col]:
                 pygame.draw.rect(screen, COLORS["GRAY"], (x,y,CELL_SIZE,CELL_SIZE))
@@ -172,7 +173,7 @@ def flag():
     global flags_placed
     x,y = pygame.mouse.get_pos()
 
-    row = y//CELL_SIZE
+    row = (y-HEADER_HEIGHT)//CELL_SIZE
     col = x//CELL_SIZE
 
     if not(0 <= row < HEIGHT and 0 <= col < WIDTH):
@@ -210,7 +211,7 @@ while running:
         if event.type == pygame.MOUSEBUTTONDOWN:
             x,y = pygame.mouse.get_pos()
 
-            row = y//CELL_SIZE
+            row = (y-HEADER_HEIGHT)//CELL_SIZE
             col = x//CELL_SIZE
             handle_click(row, col)
 
@@ -220,7 +221,7 @@ while running:
             
             if event.key == pygame.K_q:
                 x,y=pygame.mouse.get_pos()
-                row=y//CELL_SIZE
+                row=(y-HEADER_HEIGHT)//CELL_SIZE
                 col = x//CELL_SIZE
                 handle_click(row,col)
     
