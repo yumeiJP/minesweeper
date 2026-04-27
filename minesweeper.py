@@ -22,6 +22,7 @@ clock = pygame.time.Clock()
 font = pygame.font.SysFont('Arial', 24)
 
 win = False
+first_click = True
 
 scroll_x = 0
 scroll_y = 0
@@ -161,6 +162,7 @@ def reveal_cell(row, col):
     if numbers[row][col] == -1:
         print("Game over! L bozo")
         game_over = True
+        return
     
     revealed_non_mine = sum(not mines[r][c] and revealed[r][c] for r in range(HEIGHT) for c in range(WIDTH))
     if revealed_non_mine == WIDTH * HEIGHT - NUM_MINES:
@@ -168,10 +170,24 @@ def reveal_cell(row, col):
         game_over = True
 
 def handle_click(row,col):
-    global game_over
-    global start_time
+    global game_over, start_time, first_click
 
     if game_over: return
+
+    if first_click:
+        all_positions = [(r, c) for r in range(HEIGHT) for c in range(WIDTH)]
+        all_positions.remove((row, col))
+
+        mine_positions = random.sample(all_positions, NUM_MINES)
+
+        for (r, c) in mine_positions:
+            mines[r][c] = True
+
+        for r in range(HEIGHT):
+            for c in range(WIDTH):
+                set_cell_number(mines, numbers, r, c)
+
+        first_click = False
 
     if start_time is None:
         start_time = pygame.time.get_ticks()
@@ -225,7 +241,7 @@ def flag():
         flags_placed -= 1
 
 def new_game():
-    global flags_placed, game_over, mines, numbers, revealed, flagged, mine_positions, start_time, scroll_x, scroll_y, win
+    global flags_placed, game_over, mines, numbers, revealed, flagged, mine_positions, start_time, scroll_x, scroll_y, win, first_click
 
     positions = [(r,c) for r in range(HEIGHT) for c in range(WIDTH)]
     mines = [[False]*WIDTH for _ in range(HEIGHT)]
@@ -237,17 +253,13 @@ def new_game():
     scroll_y = 0
 
     win = False
+    first_click = True
 
     start_time = None
 
     flags_placed = 0
 
     game_over = False
-
-    mine_positions = random.sample(positions, NUM_MINES)
-
-    for pos in mine_positions:
-        mines[pos[0]][pos[1]] = True
 
     for r in range(HEIGHT):
         for c in range(WIDTH):
