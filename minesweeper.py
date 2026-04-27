@@ -3,11 +3,11 @@ import random
 
 pygame.init()
 
-WIDTH = 79
-HEIGHT = 54
+WIDTH = 20
+HEIGHT = 20
 HEADER_HEIGHT = 50
 PANEL_WIDTH = 150
-NUM_MINES = 10
+NUM_MINES = 5
 CELL_SIZE = 40
 COLORS = {
     "GRAY": (128, 128, 128),
@@ -20,6 +20,8 @@ FIXED_HEIGHT = 1200
 screen = pygame.display.set_mode((FIXED_WIDTH, FIXED_HEIGHT))
 clock = pygame.time.Clock()
 font = pygame.font.SysFont('Arial', 24)
+
+win = False
 
 scroll_x = 0
 scroll_y = 0
@@ -111,6 +113,14 @@ def draw_board():
     timer_text = font.render(f"Time: {elapsed_time}s", True, (0,0,0))
     screen.blit(timer_text, (FIXED_WIDTH - PANEL_WIDTH + 10, HEADER_HEIGHT + 10))
 
+    if win:
+        status_text = font.render("YOU WIN!", True, (0, 0, 0))
+    elif game_over:
+        status_text = font.render("GAME OVER", True, (0, 0, 0))
+    else:
+        status_text = font.render("Playing", True, (0, 0, 0))
+    screen.blit(status_text, (FIXED_WIDTH - PANEL_WIDTH + 10, HEADER_HEIGHT + 50))
+
 def chord(row,col):
     flagged_count = 0
 
@@ -121,7 +131,10 @@ def chord(row,col):
             if flagged[r][c]:
                 flagged_count += 1
     
+    print(f"Chord on ({row},{col}): flags={flagged_count}, number={numbers[row][col]}")
+    
     if flagged_count == numbers[row][col]:
+        print("chord triggered")
         for r in range(row-1, row+2):
             for c in range(col-1, col+2):
                 if not (0<=r<HEIGHT and 0<=c<WIDTH):
@@ -132,7 +145,7 @@ def chord(row,col):
                 reveal_cell(r, c)
     
 def reveal_cell(row, col):
-    global game_over
+    global game_over, win
 
     if not(0 <= row < HEIGHT and 0 <= col < WIDTH):
         return
@@ -147,6 +160,11 @@ def reveal_cell(row, col):
 
     if numbers[row][col] == -1:
         print("Game over! L bozo")
+        game_over = True
+    
+    revealed_non_mine = sum(row.count(True) for row in revealed)
+    if revealed_non_mine == WIDTH * HEIGHT - NUM_MINES:
+        win = True
         game_over = True
 
 def handle_click(row,col):
@@ -207,7 +225,7 @@ def flag():
         flags_placed -= 1
 
 def new_game():
-    global flags_placed, game_over, mines, numbers, revealed, flagged, mine_positions, start_time, scroll_x, scroll_y
+    global flags_placed, game_over, mines, numbers, revealed, flagged, mine_positions, start_time, scroll_x, scroll_y, win
 
     positions = [(r,c) for r in range(HEIGHT) for c in range(WIDTH)]
     mines = [[False]*WIDTH for _ in range(HEIGHT)]
@@ -217,6 +235,8 @@ def new_game():
 
     scroll_x = 0
     scroll_y = 0
+
+    win = False
 
     start_time = None
 
