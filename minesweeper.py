@@ -16,20 +16,7 @@ COLORS = {
 
 screen = pygame.display.set_mode((WIDTH*CELL_SIZE, HEIGHT*CELL_SIZE + HEADER_HEIGHT))
 clock = pygame.time.Clock()
-
-positions = [(r,c) for r in range(HEIGHT) for c in range(WIDTH)]
-mines = [[False]*WIDTH for _ in range(HEIGHT)]
-numbers = [[0]*WIDTH for _ in range(HEIGHT)]
-revealed = [[False]*WIDTH for _ in range(HEIGHT)]
-flagged = [[False]*WIDTH for _ in range(HEIGHT)]
-
-flags_placed = 0
-
-game_over = False
-
 font = pygame.font.SysFont('Arial', 24)
-
-mine_positions = random.sample(positions, NUM_MINES)
 
 def print_board(mines, numbers):
     for r in range(HEIGHT):
@@ -188,16 +175,30 @@ def flag():
         flags_placed += 1
     else:
         flags_placed -= 1
-    
 
+def new_game():
+    global flags_placed, game_over, mines, numbers, revealed, flagged, mine_positions
 
-for pos in mine_positions:
-    mines[pos[0]][pos[1]] = True
+    positions = [(r,c) for r in range(HEIGHT) for c in range(WIDTH)]
+    mines = [[False]*WIDTH for _ in range(HEIGHT)]
+    numbers = [[0]*WIDTH for _ in range(HEIGHT)]
+    revealed = [[False]*WIDTH for _ in range(HEIGHT)]
+    flagged = [[False]*WIDTH for _ in range(HEIGHT)]
 
-for r in range(HEIGHT):
-    for c in range(WIDTH):
-        set_cell_number(mines, numbers, r, c)
+    flags_placed = 0
 
+    game_over = False
+
+    mine_positions = random.sample(positions, NUM_MINES)
+
+    for pos in mine_positions:
+        mines[pos[0]][pos[1]] = True
+
+    for r in range(HEIGHT):
+        for c in range(WIDTH):
+            set_cell_number(mines, numbers, r, c)
+
+new_game()
 
 print_board(mines, numbers)
 
@@ -224,6 +225,9 @@ while running:
                 row=(y-HEADER_HEIGHT)//CELL_SIZE
                 col = x//CELL_SIZE
                 handle_click(row,col)
+            
+            if event.key == pygame.K_r:
+                new_game()
     
     draw_board()
     pygame.display.update()
