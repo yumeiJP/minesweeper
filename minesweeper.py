@@ -22,6 +22,10 @@ numbers = [[0]*WIDTH for _ in range(HEIGHT)]
 revealed = [[False]*WIDTH for _ in range(HEIGHT)]
 flagged = [[False]*WIDTH for _ in range(HEIGHT)]
 
+flags_placed = 0
+
+game_over = False
+
 font = pygame.font.SysFont('Arial', 24)
 
 mine_positions = random.sample(positions, NUM_MINES)
@@ -90,6 +94,10 @@ def draw_board():
                 text_rect = text.get_rect(center = (x+CELL_SIZE//2, y+CELL_SIZE//2))
                 screen.blit(text, text_rect)
 
+    mines_left = NUM_MINES-flags_placed
+    counter_text = font.render(f"💣 {mines_left}", True, (0,0,0))
+    screen.blit(counter_text, (10, 10))
+
 def chord(row,col):
     flagged_count = 0
 
@@ -111,6 +119,7 @@ def chord(row,col):
                 reveal_cell(r, c)
     
 def reveal_cell(row, col):
+    global game_over
 
     if not(0 <= row < HEIGHT and 0 <= col < WIDTH):
         return
@@ -125,9 +134,13 @@ def reveal_cell(row, col):
 
     if numbers[row][col] == -1:
         print("Game over! L bozo")
-        #game over
+        game_over = True
 
 def handle_click(row,col):
+    global game_over
+
+    if game_over: return
+
     if numbers[row][col]>0 and revealed[row][col]:
         chord(row, col)
         return
@@ -156,6 +169,7 @@ def flood_fill(row, col):
             flood_fill(r,c)
 
 def flag():
+    global flags_placed
     x,y = pygame.mouse.get_pos()
 
     row = y//CELL_SIZE
@@ -168,6 +182,11 @@ def flag():
         return
     
     flagged[row][col] = not flagged[row][col]
+
+    if flagged[row][col]:
+        flags_placed += 1
+    else:
+        flags_placed -= 1
     
 
 
