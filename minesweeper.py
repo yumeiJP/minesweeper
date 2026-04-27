@@ -89,17 +89,30 @@ def draw_board():
                 text = font.render("X", True, (0,0,0))
                 text_rect = text.get_rect(center = (x+CELL_SIZE//2, y+CELL_SIZE//2))
                 screen.blit(text, text_rect)
-    
-def mouse_click():
-    x,y = pygame.mouse.get_pos()
 
-    row = y//CELL_SIZE
-    col = x//CELL_SIZE
+def chord(row,col):
+    flagged_count = 0
+
+    for r in range(row-1, row+2):
+        for c in range(col-1, col+2):
+            if not (0<=r<HEIGHT and 0<=c<WIDTH):
+                continue
+            if flagged[r][c]:
+                flagged_count += 1
+    
+    if flagged_count == numbers[row][col]:
+        for r in range(row-1, row+2):
+            for c in range(col-1, col+2):
+                if not (0<=r<HEIGHT and 0<=c<WIDTH):
+                    continue
+                if revealed[r][c] or flagged[r][c]:
+                    continue
+
+                reveal_cell(r, c)
+    
+def reveal_cell(row, col):
 
     if not(0 <= row < HEIGHT and 0 <= col < WIDTH):
-        return
-    
-    if revealed[row][col]:
         return
     
     if flagged[row][col]:
@@ -113,6 +126,15 @@ def mouse_click():
     if numbers[row][col] == -1:
         print("Game over! L bozo")
         #game over
+
+def handle_click(row,col):
+    if numbers[row][col]>0 and revealed[row][col]:
+        chord(row, col)
+        return
+    
+    if flagged[row][col]: return
+
+    reveal_cell(row,col)
 
 def flood_fill(row, col):
     #TODO: fix wrong logic
@@ -167,14 +189,21 @@ while running:
             running = False
         
         if event.type == pygame.MOUSEBUTTONDOWN:
-            mouse_click()
+            x,y = pygame.mouse.get_pos()
+
+            row = y//CELL_SIZE
+            col = x//CELL_SIZE
+            handle_click(row, col)
 
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_f:
                 flag()
             
             if event.key == pygame.K_q:
-                mouse_click()
+                x,y=pygame.mouse.get_pos()
+                row=y//CELL_SIZE
+                col = x//CELL_SIZE
+                handle_click(row,col)
     
     draw_board()
     pygame.display.update()
