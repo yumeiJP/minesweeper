@@ -7,7 +7,7 @@ WIDTH = 79
 HEIGHT = 54
 HEADER_HEIGHT = 50
 PANEL_WIDTH = 150
-NUM_MINES = 998
+NUM_MINES = 10
 CELL_SIZE = 40
 COLORS = {
     "GRAY": (128, 128, 128),
@@ -15,8 +15,8 @@ COLORS = {
     "WHITE": (255,255,255)
 }
 
-FIXED_WIDTH = 1200
-FIXED_HEIGHT = 800
+FIXED_WIDTH = 1600
+FIXED_HEIGHT = 1200
 screen = pygame.display.set_mode((FIXED_WIDTH, FIXED_HEIGHT))
 clock = pygame.time.Clock()
 font = pygame.font.SysFont('Arial', 24)
@@ -99,17 +99,17 @@ def draw_board():
     counter_text = font.render(f"MINES {mines_left}", True, (0,0,0))
     screen.blit(counter_text, (10, 10))
 
-    panel_rect = pygame.Rect(WIDTH*CELL_SIZE, 0, PANEL_WIDTH, HEIGHT*CELL_SIZE + HEADER_HEIGHT)
+    panel_rect = pygame.Rect(FIXED_WIDTH - PANEL_WIDTH, 0, PANEL_WIDTH, FIXED_HEIGHT)
     pygame.draw.rect(screen, (220, 220, 220), panel_rect)
     pygame.draw.rect(screen, (0, 0, 0), panel_rect, 2)
-    
+
     if not game_over and start_time is not None:
         elapsed_time = (pygame.time.get_ticks() - start_time) / 1000
     else:
         elapsed_time = 0
-    
+
     timer_text = font.render(f"Time: {elapsed_time}s", True, (0,0,0))
-    screen.blit(timer_text, (WIDTH*CELL_SIZE + 10, HEADER_HEIGHT + 10))
+    screen.blit(timer_text, (FIXED_WIDTH - PANEL_WIDTH + 10, HEADER_HEIGHT + 10))
 
 def chord(row,col):
     flagged_count = 0
@@ -167,23 +167,21 @@ def handle_click(row,col):
     reveal_cell(row,col)
 
 def flood_fill(row, col):
-    #TODO: fix wrong logic
-
-    if not(0 <= row < HEIGHT and 0 <= col < WIDTH):
-        return
-
-    if numbers[row][col] == -1 or revealed[row][col]:
-        return
-    
-    revealed[row][col] = True
-    
-    if numbers[row][col] != 0:
-        return
-    
-    for r in range(row-1, row+2):
-        for c in range(col-1, col+2):
-            if r==row and c==col: continue
-            flood_fill(r,c)
+    stack = [(row, col)]
+    while stack:
+        r, c = stack.pop()
+        if not (0 <= r < HEIGHT and 0 <= c < WIDTH):
+            continue
+        if numbers[r][c] == -1 or revealed[r][c]:
+            continue
+        revealed[r][c] = True
+        if numbers[r][c] != 0:
+            continue
+        for dr in (-1, 0, 1):
+            for dc in (-1, 0, 1):
+                if dr == 0 and dc == 0:
+                    continue
+                stack.append((r + dr, c + dc))
 
 def flag():
     global flags_placed
@@ -242,20 +240,38 @@ print_board(mines, numbers)
 running = True
 
 while running:
+    visible_width = (screen.get_width() - PANEL_WIDTH) // CELL_SIZE
+    visible_height = (screen.get_height() - HEADER_HEIGHT) // CELL_SIZE
+
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
         
         if event.type == pygame.MOUSEBUTTONDOWN:
-            x,y = pygame.mouse.get_pos()
-
-            row = (y-HEADER_HEIGHT)//CELL_SIZE
-            col = x//CELL_SIZE
-            board_row = scroll_y + row
-            board_col = scroll_x + col
-
-            if 0 <= board_row < HEIGHT and 0 <= board_col < WIDTH:
-                handle_click(board_row, board_col)
+            if event.button == 4:   # scroll up
+                scroll_y = max(0, min(scroll_y - 1, HEIGHT - visible_height))
+            elif event.button == 5: # scroll down
+                scroll_y = max(0, min(scroll_y + 1, HEIGHT - visible_height))
+            elif event.button == 6: # scroll left (if supported)
+                scroll_x = max(0, min(scroll_x - 1, WIDTH - visible_width))
+            elif event.button == 7: # scroll right
+                scroll_x = max(0, min(scroll_x + 1, WIDTH - visible_width))
+            else:
+                # Normal click (left button, etc.)
+                x, y = pygame.mouse.get_pos()
+                row = (y - HEADER_HEIGHT) // CELL_SIZE
+                col = x // CELL_SIZE
+                board_row = scroll_y + row
+                board_col = scroll_x + col
+                if 0 <= board_row < HEIGHT and 0 <= board_col < WIDTH:
+                    handle_click(board_row, board_col)
+        
+        if event.type == pygame.MOUSEWHEEL:
+            scroll_y -= event.y
+            scroll_x += event.x
+            # clamp using visible_width/height (already computed at loop start)
+            scroll_x = max(0, min(scroll_x, WIDTH - visible_width))
+            scroll_y = max(0, min(scroll_y, HEIGHT - visible_height))
 
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_f:
