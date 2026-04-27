@@ -20,6 +20,7 @@ positions = [(r,c) for r in range(HEIGHT) for c in range(WIDTH)]
 mines = [[False]*WIDTH for _ in range(HEIGHT)]
 numbers = [[0]*WIDTH for _ in range(HEIGHT)]
 revealed = [[False]*WIDTH for _ in range(HEIGHT)]
+flagged = [[False]*WIDTH for _ in range(HEIGHT)]
 
 font = pygame.font.SysFont('Arial', 24)
 
@@ -72,6 +73,8 @@ def draw_board():
 
             if not revealed[row][col]:
                 pygame.draw.rect(screen, COLORS["GRAY"], (x,y,CELL_SIZE,CELL_SIZE))
+                if flagged[row][col]:
+                    pygame.draw.circle(screen, (255, 0, 0), (x + CELL_SIZE//2, y + CELL_SIZE//2), CELL_SIZE//4)
                 continue
             
             pygame.draw.rect(screen, COLORS["LIGHT_GRAY"], (x,y,CELL_SIZE,CELL_SIZE))
@@ -87,8 +90,8 @@ def draw_board():
                 text_rect = text.get_rect(center = (x+CELL_SIZE//2, y+CELL_SIZE//2))
                 screen.blit(text, text_rect)
     
-def mouse_click(event):
-    x,y = event.pos
+def mouse_click():
+    x,y = pygame.mouse.get_pos()
 
     row = y//CELL_SIZE
     col = x//CELL_SIZE
@@ -99,10 +102,17 @@ def mouse_click(event):
     if revealed[row][col]:
         return
     
+    if flagged[row][col]:
+        return
+    
     if numbers[row][col] == 0:
         flood_fill(row,col)
     
     revealed[row][col] = True
+
+    if numbers[row][col] == -1:
+        print("Game over! L bozo")
+        #game over
 
 def flood_fill(row, col):
     #TODO: fix wrong logic
@@ -123,6 +133,22 @@ def flood_fill(row, col):
             if r==row and c==col: continue
             flood_fill(r,c)
 
+def flag():
+    x,y = pygame.mouse.get_pos()
+
+    row = y//CELL_SIZE
+    col = x//CELL_SIZE
+
+    if not(0 <= row < HEIGHT and 0 <= col < WIDTH):
+        return
+    
+    if revealed[row][col]:
+        return
+    
+    flagged[row][col] = not flagged[row][col]
+    
+
+
 for pos in mine_positions:
     mines[pos[0]][pos[1]] = True
 
@@ -141,7 +167,14 @@ while running:
             running = False
         
         if event.type == pygame.MOUSEBUTTONDOWN:
-            mouse_click(event)
+            mouse_click()
+
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_f:
+                flag()
+            
+            if event.key == pygame.K_q:
+                mouse_click()
     
     draw_board()
     pygame.display.update()
