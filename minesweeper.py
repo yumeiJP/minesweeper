@@ -162,7 +162,7 @@ def reveal_cell(row, col):
         print("Game over! L bozo")
         game_over = True
     
-    revealed_non_mine = sum(row.count(True) for row in revealed)
+    revealed_non_mine = sum(not mines[r][c] and revealed[r][c] for r in range(HEIGHT) for c in range(WIDTH))
     if revealed_non_mine == WIDTH * HEIGHT - NUM_MINES:
         win = True
         game_over = True
