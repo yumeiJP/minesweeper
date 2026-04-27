@@ -3,11 +3,11 @@ import random
 
 pygame.init()
 
-WIDTH = 20
-HEIGHT = 20
+WIDTH = 30
+HEIGHT = 16
 HEADER_HEIGHT = 50
 PANEL_WIDTH = 150
-NUM_MINES = 5
+NUM_MINES = 99
 CELL_SIZE = 40
 COLORS = {
     "GRAY": (128, 128, 128),
