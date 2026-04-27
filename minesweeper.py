@@ -6,7 +6,8 @@ pygame.init()
 WIDTH = 15
 HEIGHT = 15
 HEADER_HEIGHT = 50
-NUM_MINES = 60
+PANEL_WIDTH = 150
+NUM_MINES = 40
 CELL_SIZE = 40
 COLORS = {
     "GRAY": (128, 128, 128),
@@ -14,7 +15,7 @@ COLORS = {
     "WHITE": (255,255,255)
 }
 
-screen = pygame.display.set_mode((WIDTH*CELL_SIZE, HEIGHT*CELL_SIZE + HEADER_HEIGHT))
+screen = pygame.display.set_mode((WIDTH*CELL_SIZE + PANEL_WIDTH, HEIGHT*CELL_SIZE + HEADER_HEIGHT))
 clock = pygame.time.Clock()
 font = pygame.font.SysFont('Arial', 24)
 
@@ -83,8 +84,20 @@ def draw_board():
                 screen.blit(text, text_rect)
 
     mines_left = NUM_MINES-flags_placed
-    counter_text = font.render(f"💣 {mines_left}", True, (0,0,0))
+    counter_text = font.render(f"MINES {mines_left}", True, (0,0,0))
     screen.blit(counter_text, (10, 10))
+
+    panel_rect = pygame.Rect(WIDTH*CELL_SIZE, 0, PANEL_WIDTH, HEIGHT*CELL_SIZE + HEADER_HEIGHT)
+    pygame.draw.rect(screen, (220, 220, 220), panel_rect)
+    pygame.draw.rect(screen, (0, 0, 0), panel_rect, 2)
+    
+    if not game_over and start_time is not None:
+        elapsed_time = (pygame.time.get_ticks() - start_time) / 1000
+    else:
+        elapsed_time = 0
+    
+    timer_text = font.render(f"Time: {elapsed_time}s", True, (0,0,0))
+    screen.blit(timer_text, (WIDTH*CELL_SIZE + 10, HEADER_HEIGHT + 10))
 
 def chord(row,col):
     flagged_count = 0
@@ -126,8 +139,12 @@ def reveal_cell(row, col):
 
 def handle_click(row,col):
     global game_over
+    global start_time
 
     if game_over: return
+
+    if start_time is None:
+        start_time = pygame.time.get_ticks()
 
     if numbers[row][col]>0 and revealed[row][col]:
         chord(row, col)
@@ -177,13 +194,15 @@ def flag():
         flags_placed -= 1
 
 def new_game():
-    global flags_placed, game_over, mines, numbers, revealed, flagged, mine_positions
+    global flags_placed, game_over, mines, numbers, revealed, flagged, mine_positions, start_time
 
     positions = [(r,c) for r in range(HEIGHT) for c in range(WIDTH)]
     mines = [[False]*WIDTH for _ in range(HEIGHT)]
     numbers = [[0]*WIDTH for _ in range(HEIGHT)]
     revealed = [[False]*WIDTH for _ in range(HEIGHT)]
     flagged = [[False]*WIDTH for _ in range(HEIGHT)]
+
+    start_time = None
 
     flags_placed = 0
 
